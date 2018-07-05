@@ -1,5 +1,7 @@
 var express = require('express');
 var router = express.Router();
+var mongoose = requre('mongoose');
+var Post = mongoose.model('Post');
 
 router.use(function(req, res, next){
 
@@ -18,39 +20,76 @@ router.use(function(req, res, next){
     return next();
 });
 
+//api for all posts
 router.route('/posts')
 
     //returns all posts
     .get((req, res) => {
 
-        //temporary solution
-        res.send({message: 'TODO return all posts'});
+        Post.find(function (err, data){
+
+            if(err){
+                return res.send(500, err);
+            }
+
+            return res.send(data);
+
+        });
+
     })
 
-    .post((req, res) => {
+    //creates a new post
+	.post(function(req, res){
 
-       //temporary solution
-       res.send({message: 'TODO Create a new post'}); 
-    });
+		var post = new Post();
+		post.text = req.body.text;
+		post.created_by = req.body.created_by;
+		post.save(function(err, post) {
+			if (err){
+				return res.send(500, err);
+			}
+			return res.json(post);
+		});
+	})
 
 router.route('/posts/:id')
 
-    //returns a particular post
-    .get((req, res) => {
+    //gets specified post
+	.get(function(req, res){
+		Post.findById(req.params.id, function(err, post){
+			if(err)
+				res.send(err);
+			res.json(post);
+		});
+	}) 
 
-        res.send({message: 'TODO return post with ID  ' + req.params.id});
-    })
+    //updates specified post
+	.put(function(req, res){
+		Post.findById(req.params.id, function(err, post){
+			if(err)
+				res.send(err);
 
-    //update existing post
-    .put((req, res) => {
-        
-        res.send({message: 'TODO modify post with ID  ' + req.params.id});
-    })
+			post.created_by = req.body.created_by;
+			post.text = req.body.text;
 
-    //delete existing post
-    .delete((req, res) => {
-        
-        res.send({message: 'TODO delete post with ID  ' + req.params.id});
-    })
+			post.save(function(err, post){
+				if(err)
+					res.send(err);
+
+				res.json(post);
+			});
+		});
+	})
+
+    //deletes the post
+	.delete(function(req, res) {
+		Post.remove({
+			_id: req.params.id
+		}, function(err) {
+			if (err)
+				res.send(err);
+			res.json("deleted :(");
+		});
+	});
 
 module.exports = router;

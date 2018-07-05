@@ -7,6 +7,10 @@ var passport = require('passport');
 var session = require('express-session');
 var api = require('./routes/api');
 var authenticate = require('./routes/authenticate')(passport);
+var mongoose = require('mongoose');
+// connect to mongodb
+mongoose.connect("mongodb://localhost:27017/chirp-test");
+
 
 var app = express();
 
@@ -24,6 +28,9 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(passport.initialize());
 app.use(passport.session());
+
+// Initialize models
+require('./models/models.js');
 
 //// Initialize Passport
 var initPassport = require('./passport-init');
